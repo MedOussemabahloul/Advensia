@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RTLS Advensia Desktop - Interface Administrateur</title>
+    <link rel="stylesheet" href="styles/main.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Navigation Sidebar -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo-container">
+                    <div class="logo-icon">
+                        <i class="fas fa-satellite-dish"></i>
+                    </div>
+                    <div class="logo-text">
+                        <h1>RTLS</h1>
+                        <span>Advensia</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="nav-menu">
+                <div class="nav-item active" data-section="dashboard">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Dashboard</span>
+                </div>
+                <div class="nav-item" data-section="devices">
+                    <i class="fas fa-microchip"></i>
+                    <span>Capteurs GPS</span>
+                </div>
+                <div class="nav-item" data-section="geofences">
+                    <i class="fas fa-draw-polygon"></i>
+                    <span>Zones de Sécurité</span>
+                </div>
+                <div class="nav-item" data-section="alerts">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <span>Alertes</span>
+                    <div class="badge" id="alert-badge">2</div>
+                </div>
+                <div class="nav-item" data-section="analytics">
+                    <i class="fas fa-chart-bar"></i>
+                    <span>Analytics</span>
+                </div>
+                <div class="nav-item" data-section="settings">
+                    <i class="fas fa-cog"></i>
+                    <span>Paramètres</span>
+                </div>
+            </div>
+
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <div class="user-avatar">
+                        <i class="fas fa-user-shield"></i>
+                    </div>
+                    <div class="user-details">
+                        <strong>Admin</strong>
+                        <span>Administrateur</span>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="main-header">
+                <div class="header-left">
+                    <h2 id="page-title">Dashboard</h2>
+                    <div class="breadcrumb">
+                        <span id="breadcrumb-text">Aperçu général du système</span>
+                    </div>
+                </div>
+                <div class="header-right">
+                    <div class="system-status">
+                        <div class="status-indicator online"></div>
+                        <span>Système opérationnel</span>
+                    </div>
+                    <div class="header-actions">
+                        <button class="btn-icon" id="refresh-btn" title="Actualiser">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                        <button class="btn-icon" id="notifications-btn" title="Notifications">
+                            <i class="fas fa-bell"></i>
+                            <div class="notification-dot"></div>
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Content Sections -->
+            <div class="content-wrapper">
+                <!-- Dashboard Section -->
+                <section id="dashboard-section" class="content-section active">
+                    <!-- Stats Cards -->
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-microchip"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3 id="total-devices">5</h3>
+                                <span>Capteurs Total</span>
+                            </div>
+                        </div>
+                        <div class="stat-card online">
+                            <div class="stat-icon">
+                                <i class="fas fa-wifi"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3 id="online-devices">3</h3>
+                                <span>En Ligne</span>
+                            </div>
+                        </div>
+                        <div class="stat-card critical">
+                            <div class="stat-icon">
+                                <i class="fas fa-exclamation-triangle"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3 id="critical-devices">1</h3>
+                                <span>Critiques</span>
+                            </div>
+                        </div>
+                        <div class="stat-card offline">
+                            <div class="stat-icon">
+                                <i class="fas fa-power-off"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3 id="offline-devices">1</h3>
+                                <span>Hors Ligne</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Map Container -->
+                    <div class="dashboard-content">
+                        <div class="map-section">
+                            <div class="section-header">
+                                <h3>Carte Interactive - Localisation Temps Réel</h3>
+                                <div class="map-controls">
+                                    <button class="btn-sm" id="toggle-devices">
+                                        <i class="fas fa-eye"></i> Capteurs
+                                    </button>
+                                    <button class="btn-sm" id="toggle-zones">
+                                        <i class="fas fa-eye"></i> Zones
+                                    </button>
+                                    <button class="btn-sm" id="center-map">
+                                        <i class="fas fa-crosshairs"></i> Centrer
+                                    </button>
+                                </div>
+                            </div>
+                            <div id="map" class="map-container"></div>
+                        </div>
+
+                        <!-- Device Details -->
+                        <div class="device-details">
+                            <div class="section-header">
+                                <h3>Détails du Capteur Sélectionné</h3>
+                            </div>
+                            <div id="selected-device-info" class="device-info">
+                                <div class="no-selection">
+                                    <i class="fas fa-mouse-pointer"></i>
+                                    <p>Cliquez sur un capteur sur la carte pour voir ses détails</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Alerts -->
+                    <div class="alerts-summary">
+                        <div class="section-header">
+                            <h3>Alertes Récentes</h3>
+                            <a href="#" class="view-all-link" data-section="alerts">Voir tout</a>
+                        </div>
+                        <div id="recent-alerts" class="alerts-list">
+                            <!-- Populated by JavaScript -->
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Devices Section -->
+                <section id="devices-section" class="content-section">
+                    <div class="section-header">
+                        <h3>Gestion des Capteurs GPS</h3>
+                        <button class="btn-primary" id="add-device-btn">
+                            <i class="fas fa-plus"></i>
+                            Ajouter un Capteur
+                        </button>
+                    </div>
+
+                    <!-- Filters -->
+                    <div class="filters-bar">
+                        <div class="search-box">
+                            <i class="fas fa-search"></i>
+                            <input type="text" id="device-search" placeholder="Rechercher par nom ou adresse MAC...">
+                        </div>
+                        <div class="filter-controls">
+                            <select id="status-filter">
+                                <option value="">Tous les statuts</option>
+                                <option value="online">En ligne</option>
+                                <option value="critical">Critique</option>
+                                <option value="offline">Hors ligne</option>
+                            </select>
+                            <select id="zone-filter">
+                                <option value="">Toutes les zones</option>
+                                <option value="Zone A">Zone A</option>
+                                <option value="Zone B">Zone B</option>
+                                <option value="Zone C">Zone C</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Devices Table -->
+                    <div class="table-container">
+                        <table class="data-table" id="devices-table">
+                            <thead>
+                                <tr>
+                                    <th>
+                                        <input type="checkbox" id="select-all-devices">
+                                    </th>
+                                    <th>Nom</th>
+                                    <th>Adresse MAC</th>
+                                    <th>Zone</th>
+                                    <th>Température</th>
+                                    <th>Statut</th>
+                                    <th>Batterie</th>
+                                    <th>Signal</th>
+                                    <th>Dernière Mise à Jour</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="devices-table-body">
+                                <!-- Populated by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination -->
+                    <div class="pagination-container">
+                        <div class="pagination-info">
+                            <span id="pagination-info">Affichage de 1-5 sur 5 capteurs</span>
+                        </div>
+                        <div class="pagination-controls">
+                            <button class="btn-sm" id="prev-page" disabled>
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                            <div class="page-numbers">
+                                <span class="page-number active">1</span>
+                            </div>
+                            <button class="btn-sm" id="next-page" disabled>
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Geofences Section -->
+                <section id="geofences-section" class="content-section">
+                    <div class="section-header">
+                        <h3>Zones de Sécurité (Geofencing)</h3>
+                        <button class="btn-primary" id="add-geofence-btn">
+                            <i class="fas fa-plus"></i>
+                            Créer une Zone
+                        </button>
+                    </div>
+
+                    <div class="geofences-content">
+                        <div class="geofences-list">
+                            <div id="geofences-container">
+                                <!-- Populated by JavaScript -->
+                            </div>
+                        </div>
+                        <div class="geofence-map-container">
+                            <div id="geofence-map" class="map-container"></div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Alerts Section -->
+                <section id="alerts-section" class="content-section">
+                    <div class="section-header">
+                        <h3>Gestion des Alertes</h3>
+                        <div class="alert-actions">
+                            <select id="alert-severity-filter">
+                                <option value="">Toutes les sévérités</option>
+                                <option value="critical">Critique</option>
+                                <option value="high">Élevée</option>
+                                <option value="medium">Moyenne</option>
+                                <option value="low">Faible</option>
+                            </select>
+                            <select id="alert-status-filter">
+                                <option value="">Tous les statuts</option>
+                                <option value="active">Actives</option>
+                                <option value="resolved">Résolues</option>
+                            </select>
+                            <button class="btn-secondary" id="clear-resolved-alerts">
+                                <i class="fas fa-trash"></i>
+                                Effacer Résolues
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="alerts-container" id="alerts-container">
+                        <!-- Populated by JavaScript -->
+                    </div>
+                </section>
+
+                <!-- Analytics Section -->
+                <section id="analytics-section" class="content-section">
+                    <div class="section-header">
+                        <h3>Analytics et Rapports</h3>
+                        <div class="analytics-actions">
+                            <select id="analytics-period">
+                                <option value="24h">Dernières 24h</option>
+                                <option value="7d">7 derniers jours</option>
+                                <option value="30d">30 derniers jours</option>
+                            </select>
+                            <button class="btn-secondary" id="export-report">
+                                <i class="fas fa-download"></i>
+                                Exporter Rapport
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="analytics-grid">
+                        <div class="chart-container">
+                            <h4>Répartition des Statuts</h4>
+                            <canvas id="status-chart"></canvas>
+                        </div>
+                        <div class="chart-container">
+                            <h4>Évolution des Températures</h4>
+                            <canvas id="temperature-chart"></canvas>
+                        </div>
+                        <div class="chart-container">
+                            <h4>Disponibilité des Capteurs</h4>
+                            <canvas id="uptime-chart"></canvas>
+                        </div>
+                        <div class="metrics-panel">
+                            <h4>Métriques Clés</h4>
+                            <div class="metrics-list">
+                                <div class="metric-item">
+                                    <span class="metric-label">Température Moyenne:</span>
+                                    <span class="metric-value" id="avg-temperature">22.2°C</span>
+                                </div>
+                                <div class="metric-item">
+                                    <span class="metric-label">Temps de Fonctionnement:</span>
+                                    <span class="metric-value" id="system-uptime">15j 8h 32min</span>
+                                </div>
+                                <div class="metric-item">
+                                    <span class="metric-label">Alertes Totales:</span>
+                                    <span class="metric-value" id="total-alerts">3</span>
+                                </div>
+                                <div class="metric-item">
+                                    <span class="metric-label">Taux de Disponibilité:</span>
+                                    <span class="metric-value" id="availability-rate">98.5%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Settings Section -->
+                <section id="settings-section" class="content-section">
+                    <div class="section-header">
+                        <h3>Paramètres Système</h3>
+                        <button class="btn-primary" id="save-settings">
+                            <i class="fas fa-save"></i>
+                            Sauvegarder
+                        </button>
+                    </div>
+
+                    <div class="settings-content">
+                        <div class="settings-group">
+                            <h4>Paramètres Généraux</h4>
+                            <div class="form-group">
+                                <label for="temperature-unit">Unité de Température</label>
+                                <select id="temperature-unit">
+                                    <option value="celsius">Celsius (°C)</option>
+                                    <option value="fahrenheit">Fahrenheit (°F)</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="default-threshold">Seuil de Température par Défaut</label>
+                                <input type="number" id="default-threshold" step="0.1" value="25.0">
+                            </div>
+                            <div class="form-group">
+                                <label for="update-interval">Intervalle de Mise à Jour (secondes)</label>
+                                <input type="number" id="update-interval" min="10" max="300" value="30">
+                            </div>
+                        </div>
+
+                        <div class="settings-group">
+                            <h4>Notifications</h4>
+                            <div class="form-group">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="sound-alerts" checked>
+                                    <span class="checkmark"></span>
+                                    Alertes sonores
+                                </label>
+                            </div>
+                            <div class="form-group">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="desktop-notifications" checked>
+                                    <span class="checkmark"></span>
+                                    Notifications desktop
+                                </label>
+                            </div>
+                            <div class="form-group">
+                                <label for="alert-retention">Rétention des Alertes (jours)</label>
+                                <input type="number" id="alert-retention" min="1" max="365" value="30">
+                            </div>
+                        </div>
+
+                        <div class="settings-group">
+                            <h4>Carte et Affichage</h4>
+                            <div class="form-group">
+                                <label for="map-provider">Fournisseur de Carte</label>
+                                <select id="map-provider">
+                                    <option value="openstreetmap">OpenStreetMap</option>
+                                    <option value="satellite">Vue Satellite</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="language">Langue</label>
+                                <select id="language">
+                                    <option value="fr">Français</option>
+                                    <option value="en">English</option>
+                                    <option value="de">Deutsch</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="settings-group">
+                            <h4>Sécurité</h4>
+                            <div class="form-group">
+                                <label for="session-timeout">Timeout de Session (minutes)</label>
+                                <input type="number" id="session-timeout" min="15" max="480" value="120">
+                            </div>
+                            <div class="form-group">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="require-confirmation" checked>
+                                    <span class="checkmark"></span>
+                                    Demander confirmation pour les actions critiques
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modals -->
+    <!-- Device Modal -->
+    <div id="device-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="device-modal-title">Ajouter un Capteur</h3>
+                <button class="close-modal" data-modal="device-modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="device-form" class="modal-body">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="device-name">Nom du Capteur *</label>
+                        <input type="text" id="device-name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="device-mac">Adresse MAC *</label>
+                        <input type="text" id="device-mac" pattern="^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="device-zone">Zone</label>
+                        <select id="device-zone">
+                            <option value="Zone A">Zone A</option>
+                            <option value="Zone B">Zone B</option>
+                            <option value="Zone C">Zone C</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="device-threshold">Seuil de Température (°C)</label>
+                        <input type="number" id="device-threshold" step="0.1" value="25.0">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="device-latitude">Latitude *</label>
+                        <input type="number" id="device-latitude" step="any" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="device-longitude">Longitude *</label>
+                        <input type="number" id="device-longitude" step="any" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <button type="button" id="select-position-btn" class="btn-secondary">
+                        <i class="fas fa-map-marker-alt"></i>
+                        Sélectionner sur la Carte
+                    </button>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-secondary" data-modal="device-modal">Annuler</button>
+                    <button type="submit" class="btn-primary">Sauvegarder</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Geofence Modal -->
+    <div id="geofence-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="geofence-modal-title">Créer une Zone de Sécurité</h3>
+                <button class="close-modal" data-modal="geofence-modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="geofence-form" class="modal-body">
+                <div class="form-group">
+                    <label for="geofence-name">Nom de la Zone *</label>
+                    <input type="text" id="geofence-name" required>
+                </div>
+                <div class="form-group">
+                    <label for="geofence-description">Description</label>
+                    <textarea id="geofence-description" rows="3"></textarea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="geofence-center-lat">Latitude du Centre *</label>
+                        <input type="number" id="geofence-center-lat" step="any" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="geofence-center-lng">Longitude du Centre *</label>
+                        <input type="number" id="geofence-center-lng" step="any" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="geofence-radius">Rayon (mètres) *</label>
+                    <input type="number" id="geofence-radius" min="50" max="5000" value="300" required>
+                </div>
+                <div class="form-group">
+                    <label for="geofence-color">Couleur</label>
+                    <input type="color" id="geofence-color" value="#0066CC">
+                </div>
+                <div class="form-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="geofence-alert-entry">
+                        <span class="checkmark"></span>
+                        Alerte à l'entrée
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="geofence-alert-exit">
+                        <span class="checkmark"></span>
+                        Alerte à la sortie
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="geofence-active" checked>
+                        <span class="checkmark"></span>
+                        Zone active
+                    </label>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-secondary" data-modal="geofence-modal">Annuler</button>
+                    <button type="submit" class="btn-primary">Sauvegarder</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Loading Spinner -->
+    <div id="loading" class="loading hidden">
+        <div class="loading-spinner">
+            <div class="spinner"></div>
+            <p>Chargement en cours...</p>
+        </div>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Scripts -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="scripts/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,47 @@
+{
+  "name": "rtls-advensia-desktop",
+  "version": "1.0.0",
+  "description": "Application Desktop RTLS Advensia - Interface Administrateur",
+  "main": "src/main.js",
+  "scripts": {
+    "dev": "electron .",
+    "start": "electron .",
+    "build": "electron-builder",
+    "build:win": "electron-builder --win",
+    "build:mac": "electron-builder --mac",
+    "build:linux": "electron-builder --linux"
+  },
+  "author": "Advensia",
+  "license": "MIT",
+  "dependencies": {
+    "electron": "^38.1.0"
+  },
+  "devDependencies": {
+    "electron-builder": "^24.9.1",
+    "typescript": "^5.8.3"
+  },
+  "build": {
+    "appId": "com.advensia.rtls-desktop",
+    "productName": "RTLS Advensia Desktop",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "src/**/*",
+      "assets/**/*",
+      "node_modules/**/*"
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "assets/icon.ico"
+    },
+    "mac": {
+      "target": "dmg",
+      "icon": "assets/icon.icns"
+    },
+    "linux": {
+      "target": "AppImage",
+      "icon": "assets/icon.png"
+    }
+  }
+}
